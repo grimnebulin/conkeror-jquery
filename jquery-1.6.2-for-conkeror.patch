@@ -1,0 +1,92 @@
+--- a/jquery-1.6.2.js	2011-11-05 12:21:57.000000000 -0700
++++ b/a-conkeror-jquery-1.6.2.js	2014-02-09 12:46:12.278274588 -0800
+@@ -13,12 +13,17 @@
+  *
+  * Date: Thu Jun 30 14:16:56 2011 -0400
+  */
+-(function( window, undefined ) {
++
++var $$ = (function () {
++
++function jquery_for(window) {
++    return (function (undefined) {
+ 
+ // Use the correct document accordingly with window argument (sandbox)
+-var document = window.document,
++var     document = window.document,
+ 	navigator = window.navigator,
+-	location = window.location;
++	location = window.location,
++        setTimeout = window.setTimeout;
+ var jQuery = (function() {
+ 
+ // Define a local copy of jQuery
+@@ -2893,12 +2898,6 @@ jQuery.event = {
+ 				handle.apply( cur, data );
+ 			}
+ 
+-			// Trigger an inline bound script
+-			if ( ontype && jQuery.acceptData( cur ) && cur[ ontype ] && cur[ ontype ].apply( cur, data ) === false ) {
+-				event.result = false;
+-				event.preventDefault();
+-			}
+-
+ 			// Bubble up to document, then to window
+ 			cur = cur.parentNode || cur.ownerDocument || cur === event.target.ownerDocument && window;
+ 		} while ( cur && !event.isPropagationStopped() );
+@@ -6231,23 +6230,9 @@ jQuery.extend({
+ });
+ 
+ function evalScript( i, elem ) {
+-	if ( elem.src ) {
+-		jQuery.ajax({
+-			url: elem.src,
+-			async: false,
+-			dataType: "script"
+-		});
+-	} else {
+-		jQuery.globalEval( ( elem.text || elem.textContent || elem.innerHTML || "" ).replace( rcleanScript, "/*$0*/" ) );
+-	}
+-
+-	if ( elem.parentNode ) {
+-		elem.parentNode.removeChild( elem );
+-	}
++	document.body.appendChild(elem);
+ }
+ 
+-
+-
+ var ralpha = /alpha\([^)]*\)/i,
+ 	ropacity = /opacity=([^)]*)/,
+ 	// fixed for IE9, see #8346
+@@ -8975,7 +8960,27 @@ jQuery.each([ "Height", "Width" ], funct
+ 
+ });
+ 
++jQuery.document = document;
++jQuery.window   = window;
++return jQuery;
++
++})();
++}
++
++    function ctor(obj) {
++        var jQuery = jquery_for(
++            "minibuffer" in obj ? obj.buffer.top_frame :  // Interactive context
++            "title"      in obj ? obj       .top_frame :  // Buffer
++                                  obj                     // Window
++        );
++        jQuery.extend(jQuery.fn, ctor.fn);
++        jQuery.extend(ctor.static);
++        return jQuery;
++    };
++
++    ctor.fn     = { };
++    ctor.static = { };
+ 
+-// Expose jQuery to the global object
+-window.jQuery = window.$ = jQuery;
+-})(window);
++    return ctor;
++
++})();
