@@ -10,7 +10,7 @@ $$.static.repeat = function (maxtimes, delay, callback) {
             typeof(x) == "object" && "length" in x && x.length == 0
         );
     }
-    var count = 0;
+    let count = 0;
     const id = this.window.setInterval(() => {
         if (++count > maxtimes || test(callback.call(this)))
             this.window.clearInterval(id);
@@ -21,8 +21,6 @@ $$.fn.clickthis = function () {
     return this.each(function () { this.click() });
 };
 
-$$.fn.inIframe = function () {
-    return this.length > 0
-        ? $$(this[0].contentWindow).apply(null, arguments)
-        : this;
+$$.fn.enterIframe = function () {
+    return this.length > 0 ? Some($$(this[0].contentWindow)) : None();
 };
