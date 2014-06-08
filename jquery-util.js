@@ -24,3 +24,13 @@ $$.fn.clickthis = function () {
 $$.fn.enterIframe = function () {
     return this.length > 0 ? Some($$(this[0].contentWindow)) : None();
 };
+
+$$.fn.onSubtreeMutation = function (callback) {
+    return this.each((index, element) => {
+        const singleton = this.eq(index);
+        const observer = new element.ownerDocument.defaultView.MutationObserver(
+            () => callback.call(singleton)
+        );
+        observer.observe(element, { childList: true, subtree: true });
+    });
+};
