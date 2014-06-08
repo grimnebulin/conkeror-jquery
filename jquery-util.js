@@ -28,9 +28,30 @@ $$.fn.enterIframe = function () {
 $$.fn.onSubtreeMutation = function (callback) {
     return this.each((index, element) => {
         const singleton = this.eq(index);
-        const observer = new element.ownerDocument.defaultView.MutationObserver(
-            () => callback.call(singleton)
-        );
-        observer.observe(element, { childList: true, subtree: true });
+        new element.ownerDocument.defaultView.MutationObserver(
+            function (_, observer) {
+                if (callback.call(singleton)) {
+                    observer.disconnect();
+                }
+            }
+        ).observe(element, { childList: true, subtree: true });
+    });
+};
+
+$$.fn.onAttrChange = function (callback /* , attr, ... */) {
+    const config = { attributes: true };
+    if (arguments.length >= 2)
+        config.attributeFilter = Array.prototype.slice.call(arguments, 1);
+    return this.each((index, element) => {
+        const singleton = this.eq(index);
+        new element.ownerDocument.defaultView.MutationObserver(
+            function (records, observer) {
+                for (let { attributeName: name } of records) {
+                    if (callback.call(singleton, name)) {
+                        observer.disconnect();
+                    }
+                }
+            }
+        ).observe(element, config);
     });
 };
