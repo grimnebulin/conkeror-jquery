@@ -72,7 +72,7 @@ $$.fn.onAttrChange = function (callback /* , attr, ... */) {
         function (singleton, records) {
             let done = false;
             for (let { attributeName: name } of records)
-                if (callback.call(singleton))
+                if (callback.call(singleton, name))
                     done = true;
             return done;
         },
@@ -103,4 +103,5 @@ $$.fn.whenFound = function (selector, callback, timeout) {
         },
         timeout
     );
+
 };
