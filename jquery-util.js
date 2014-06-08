@@ -25,23 +25,35 @@ $$.fn.enterIframe = function () {
     return this.length > 0 ? Some($$(this[0].contentWindow)) : None();
 };
 
-$$.fn.onMutation = function (callback, config) {
+$$.fn.onMutation = function (callback, config, timeout) {
     return this.each((index, element) => {
         const singleton = this.eq(index);
-        new element.ownerDocument.defaultView.MutationObserver(
-            function (records, observer) {
+        const window = element.ownerDocument.defaultView;
+        const observer = new window.MutationObserver(
+            function (records) {
                 if (callback(singleton, records)) {
                     observer.disconnect();
                 }
             }
-        ).observe(element, config);
+        );
+
+        observer.observe(element, config);
+
+        if (timeout) {
+            window.setTimeout(
+                function () { observer.disconnect() },
+                timeout
+            );
+        }
+
     });
 };
 
-$$.fn.onSubtreeMutation = function (callback) {
+$$.fn.onSubtreeMutation = function (callback, timeout) {
     return this.onMutation(
         singleton => callback.call(singleton),
-        { childList: true, subtree: true }
+        { childList: true, subtree: true },
+        timeout
     );
 };
 
@@ -62,4 +74,28 @@ $$.fn.onAttrChange = function (callback /* , attr, ... */) {
         config
     );
 
+};
+
+$$.static.whenFound = function (selector, callback, timeout) {
+    return this(this.document.documentElement)
+        .whenFound(selector, callback, timeout);
+};
+
+$$.fn.whenFound = function (selector, callback, timeout) {
+    const elems = this.constructor(selector);
+
+    if (elems.length > 0) {
+        callback(elems);
+        return this;
+    }
+
+    return this.onSubtreeMutation(
+        function () {
+            const elems = this.constructor(selector);
+            if (elems.length > 0)
+                callback(elems);
+            return elems.length > 0;
+        },
+        timeout
+    );
 };
