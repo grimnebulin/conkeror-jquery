@@ -25,33 +25,41 @@ $$.fn.enterIframe = function () {
     return this.length > 0 ? Some($$(this[0].contentWindow)) : None();
 };
 
-$$.fn.onSubtreeMutation = function (callback) {
-    return this.each((index, element) => {
-        const singleton = this.eq(index);
-        new element.ownerDocument.defaultView.MutationObserver(
-            function (_, observer) {
-                if (callback.call(singleton)) {
-                    observer.disconnect();
-                }
-            }
-        ).observe(element, { childList: true, subtree: true });
-    });
-};
-
-$$.fn.onAttrChange = function (callback /* , attr, ... */) {
-    const config = { attributes: true };
-    if (arguments.length >= 2)
-        config.attributeFilter = Array.prototype.slice.call(arguments, 1);
+$$.fn.onMutation = function (callback, config) {
     return this.each((index, element) => {
         const singleton = this.eq(index);
         new element.ownerDocument.defaultView.MutationObserver(
             function (records, observer) {
-                for (let { attributeName: name } of records) {
-                    if (callback.call(singleton, name)) {
-                        observer.disconnect();
-                    }
+                if (callback(singleton, records)) {
+                    observer.disconnect();
                 }
             }
         ).observe(element, config);
     });
+};
+
+$$.fn.onSubtreeMutation = function (callback) {
+    return this.onMutation(
+        singleton => callback.call(singleton),
+        { childList: true, subtree: true }
+    );
+};
+
+$$.fn.onAttrChange = function (callback /* , attr, ... */) {
+    const config = { attributes: true };
+
+    if (arguments.length >= 2)
+        config.attributeFilter = Array.prototype.slice.call(arguments, 1);
+
+    return this.onMutation(
+        function (singleton, records) {
+            let done = false;
+            for (let { attributeName: name } of records)
+                if (callback.call(singleton))
+                    done = true;
+            return done;
+        },
+        config
+    );
+
 };
