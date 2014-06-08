@@ -49,6 +49,11 @@ $$.fn.onMutation = function (callback, config, timeout) {
     });
 };
 
+$$.static.onDocumentMutation = function (callback, timeout) {
+    return this(this.document.documentElement)
+        .onSubtreeMutation(callback, timeout);
+};
+
 $$.fn.onSubtreeMutation = function (callback, timeout) {
     return this.onMutation(
         singleton => callback.call(singleton),
@@ -92,9 +97,9 @@ $$.fn.whenFound = function (selector, callback, timeout) {
     return this.onSubtreeMutation(
         function () {
             const elems = this.constructor(selector);
-            if (elems.length > 0)
-                callback(elems);
-            return elems.length > 0;
+            const done = elems.length > 0;
+            if (done) callback(elems);
+            return done;
         },
         timeout
     );
