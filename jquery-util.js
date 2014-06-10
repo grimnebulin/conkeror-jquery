@@ -105,3 +105,26 @@ $$.fn.whenFound = function (selector, callback, timeout) {
     );
 
 };
+
+function evalXpath(document, context, xpath) {
+    const result = document.evaluate(xpath, context, null, 5, null);
+    let node;
+    while ((node = result.iterateNext()) !== null)
+        yield node;
+}
+
+$$.static.xpath = function (xpath) {
+    return this([
+        node for (node in evalXpath(
+            this.document, this.document.documentElement, xpath
+        ))
+    ]);
+};
+
+$$.fn.xpath = function (xpath) {
+    return this.map(function () {
+        return [
+            node for (node in evalXpath(this.ownerDocument, this, xpath))
+        ];
+    });
+};
