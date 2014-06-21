@@ -197,6 +197,12 @@ $$.static.whenFound = function (selector, callback, timeout) {
         .whenFound(selector, callback, timeout);
 };
 
+//  A convenience function for removing elements.
+
+function remove_it(arg) {
+    arg.remove();
+}
+
 //
 //  XPath interface.
 //
