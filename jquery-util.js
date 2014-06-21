@@ -228,7 +228,6 @@ $$.fn.xpath = function (xpath) {
     });
 };
 
-
 //  A static version of the xpath method that searches for nodes using
 //  the document's root <html> element as the context node.
 
@@ -238,4 +237,20 @@ $$.static.xpath = function (xpath) {
             this.document, this.document.documentElement, xpath
         ))
     ]);
+};
+
+
+//  This method returns an object describing the computed style of the
+//  first element in this jQuery object.
+
+$$.fn.computedStyle = function () {
+    if (this.length == 0) return undefined;
+    const style = this.constructor.window.getComputedStyle(this[0]);
+    const data  = { };
+    for (let i = 0; i < style.length; ++i) {
+        const name  = style[i];
+        const cased = name.replace(/-([a-z])/g, x => x[1].toUpperCase());
+        data[cased] = style.getPropertyValue(name);
+    }
+    return data;
 };
