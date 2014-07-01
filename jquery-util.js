@@ -207,7 +207,30 @@ function remove_it(arg) {
 //  XPath interface.
 //
 
-// Helper function; generator for the nodes found by document.evaluate().
+//  Because XPath does not have a convenient way to test for the
+//  inclusion of specific names in a whitespace-delimited list of them
+//  (such as HTML elements' "class" attributes), this interface offers
+//  such a convenience.  Both the static and nonstatic versions of the
+//  xpath() method (see below) accept an XPath expression that may
+//  contain both "%%" and "%s" formatting sequences, followed by a
+//  list of strings containing whitespace-delimited names, to a number
+//  which should equal the number of "%s" sequences.  The "%s"
+//  sequences will be replaced with boolean XPath expressions which
+//  evaluate to true if a "class" child attribute node of the current
+//  node at the point where the sequence is expanded contains the next
+//  name, in order.
+//
+//  Example:
+//
+//  $.xpath("//div[%s]//table[%s and %s]", "foo", "bar", "baz")
+//  searches for table descendents with the classes "bar" and "baz" of
+//  any div elements with class "foo".  This can be equivalently
+//  represented as $.xpath("//div[%s]//table[%s]", "foo bar baz").
+//
+//  "%" characters in the XPath expression which are not followed by
+//  another "%" character or an "s" character need not be escaped.
+
+//  Helper function; generator for the nodes found by document.evaluate().
 
 function evalXpath(document, context, xpath) {
     const result = document.evaluate(xpath, context, null, 5, null);
@@ -216,11 +239,80 @@ function evalXpath(document, context, xpath) {
         yield node;
 }
 
+//  This function formats an XPath expression from the arguments
+//  object ARGS which was passed to either of the jQuery xpath()
+//  methods defined below.  The second and succeeding items in ARGS,
+//  if any, are interpreted as strings containing whitespace-delimited
+//  class names.  The first item in ARGS is interpreted as an XPath
+//  expression with possible embedded formatting sequences "%%" and
+//  "%s".  "%%" sequences are collapsed into a single "%" character;
+//  "%s" sequences are replaced by boolean XPath expressions that
+//  return true if the local "class" attribute contains the class
+//  named by the next class from ARGS, in order.
+//
+//  An exception is raised if the number of supplied classes does not
+//  match the number of embedded "%s" sequences.
+
+function formatXpath(args) {
+    const classes = xpathParseClasses(Array.slice(args, 1));
+
+    const xpath = args[0].replace(/%([%s])/g, function (_, c) {
+        if (c == "%")
+            return c;
+        if (classes.length == 0)
+            throw "Too few classes supplied to XPath expression";
+        return 'contains(concat(" ",normalize-space(@class)," "),' +
+            xpathString(" " + classes.shift() + " ") + ')';
+    });
+
+    if (classes.length > 0)
+        throw "Too many classes supplied to XPath expression";
+
+    return xpath;
+
+}
+
+//  This function returns a string containing an XPath expression
+//  which evaluates to a string equal to the input parameter STR.  If
+//  STR contains no quotation marks, a string literal delimited by
+//  quotation marks is returned; otherwise, if it contains no
+//  apostrophes, a string literal delimited by apostrophes is
+//  returned; otherwise an expression consisting of a call to the
+//  XPath function concat(), with string literal arguments delimited
+//  by quotation marks and apostrophes as needed, is returned.
+
+function xpathString(str) {
+    if (str.indexOf('"') < 0)
+        return '"' + str + '"';
+    else if (str.indexOf("'") < 0)
+        return "'" + str + "'";
+    else
+        return "concat(" +
+            str.split (/("+)/)
+               .filter(x => x.length > 0)
+               .map   (x => x[0] == '"' ? "'" + x + "'" : '"' + x + '"')
+               .join  (",")
+            + ")";
+}
+
+//  This function returns an array of all consecutive sequences of
+//  non-whitespace characters in all of the strings in the input array
+//  CLASSES.  "Whitespace" here is meant in the XML sense of the
+//  characters with ordinal values 0x20, 0x09, 0x0d, and 0x0a.
+
+function xpathParseClasses(classes) {
+    return Array.prototype.concat.apply(
+        [ ], classes.map   (c => c.match(/[^\x20\x09\x0d\x0a]+/g))
+                    .filter(x => x !== null)
+    );
+}
+
 //  This method searches for nodes using each of the nodes in this
 //  jQuery object in turn as the context node, then collects all of
 //  the found nodes together into a new jQuery object.
 
-$$.fn.xpath = function (xpath) {
+$$.fn.xpath = function (/* xpath, class, ... */) {
+    const xpath = formatXpath(arguments);
     return this.map(function () {
         return [
             node for (node in evalXpath(this.ownerDocument, this, xpath))
@@ -231,10 +323,12 @@ $$.fn.xpath = function (xpath) {
 //  A static version of the xpath method that searches for nodes using
 //  the document's root <html> element as the context node.
 
-$$.static.xpath = function (xpath) {
+$$.static.xpath = function (/* xpath, class, ... */) {
     return this([
         node for (node in evalXpath(
-            this.document, this.document.documentElement, xpath
+            this.document,
+            this.document.documentElement,
+            formatXpath(arguments)
         ))
     ]);
 };
