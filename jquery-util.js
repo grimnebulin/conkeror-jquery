@@ -225,7 +225,7 @@ function remove_it(arg) {
 //  $.xpath("//div[%s]//table[%s and %s]", "foo", "bar", "baz")
 //  searches for table descendents with the classes "bar" and "baz" of
 //  any div elements with class "foo".  This can be equivalently
-//  represented as $.xpath("//div[%s]//table[%s]", "foo bar baz").
+//  represented as $.xpath("//div[%s]//table[%s and %s]", "foo bar baz").
 //
 //  "%" characters in the XPath expression which are not followed by
 //  another "%" character or an "s" character need not be escaped.
