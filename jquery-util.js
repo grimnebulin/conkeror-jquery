@@ -173,7 +173,7 @@ $$.fn.whenFound = function (selector, callback, timeout) {
     const elems = this.constructor(selector);
 
     if (elems.length > 0) {
-        callback(elems);
+        callback.call(elems, elems);
         return this;
     }
 
