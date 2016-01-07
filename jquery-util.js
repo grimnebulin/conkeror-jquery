@@ -1,3 +1,5 @@
+"use strict";
+
 //  At some point, creating script elements via $("<script/>") stopped
 //  working; script elements created via assignment to innerHTML are
 //  executed, per sufficiently recent versions of the HTML DOM.  This
