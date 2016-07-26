@@ -4,21 +4,6 @@
 [jQuery](http://jquery.com/) interface to
 [Conkeror](http://conkeror.org/).
 
-# EXAMPLES
-
-The `$$` function accepts a Conkeror buffer, window, or interactive
-context object, and returns a jQuery object that refers to the HTML
-content of its argument.
-
-    interactive("nofixed", "Remove fixed elements", function (I) {
-      const $ = $$(I);
-      $("*").filter(function () {
-        return $.window.getComputedStyle(this).display === "fixed";
-      }).remove();
-    });
-
-# MOTIVATION
-
 # INSTALLATION
 
 A patch to a stock version of jQuery is provided.  It must be applied
@@ -44,10 +29,10 @@ Example:
     });
 
 The returned jQuery object has the extra properties "window" and
-"document" set to the window and document objects of its content.  (In
+"document" set to the window and document objects of its content.  In
 typical browser-based jQuery usage, these names would be accessible
 via the global object, but no such appropriate global object is
-available in Conkeror.)
+available in Conkeror.
 
 Two more useful fields are available on the `$$` constructor function:
 
@@ -72,10 +57,10 @@ Example:
     const $ = $$(buffer);
     $("body").wipeout($.hello("World"));
 
-## Built-In Plugins
+## Extra functionality
 
-A number of useful jQuery plugins are provided by the `jquery-util.js`
-file.
+A number of useful jQuery functions are provided by the
+`jquery-util.js` file.  These essentially amount to built-in plugins.
 
 ### Mutation
 
@@ -100,11 +85,11 @@ interface.
   
   Example:
 
-    // Whenever the element with ID "main" changes, remove any
-    // descendent elements with the class "ad":
-    $("#main").onSubtreeMutation(function () {
-      this.find(".ad").remove();
-    });
+      // Whenever the element with ID "main" changes, remove any
+      // descendent elements with the class "ad":
+      $("#main").onSubtreeMutation(function () {
+        this.find(".ad").remove();
+      });
 
 - $.onDocumentMutation(callback, timeout)
 
@@ -159,8 +144,8 @@ interface.
   
   Example:
   
-    // Remove the element with ID "right-pane" as soon as it appears:
-    $.whenFound("#right-pane").remove();
+      // Remove the element with ID "right-pane" as soon as it appears:
+      $.whenFound("#right-pane").remove();
 
 ### XPath
 
@@ -215,7 +200,7 @@ Example:
   
   Example:
   
-    const bottom = $("body").computedStyle().marginBottom;
+      const bottom = $("body").computedStyle().marginBottom;
 
 - $.script(attrs)
 
@@ -225,8 +210,8 @@ Example:
   
   Example:
   
-    $.script().text("alert('Hello world!')").appendTo("head");
-    $.script({ src: "localhost:8000/script.js"}).appendTo("head");
+      $.script().text("alert('Hello world!')").appendTo("head");
+      $.script({ src: "localhost:8000/script.js"}).appendTo("head");
     
 - $.repeat(maxtimes, delay, callback)
 
