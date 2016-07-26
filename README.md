@@ -145,7 +145,7 @@ interface.
   Example:
   
       // Remove the element with ID "right-pane" as soon as it appears:
-      $.whenFound("#right-pane").remove();
+      $.whenFound("#right-pane", remove_it);  // See below for remove_it
 
 ### XPath
 
