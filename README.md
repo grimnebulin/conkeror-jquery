@@ -68,7 +68,7 @@ These routines wrap the browser's
 [MutationObserver](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
 interface.
 
-- $(...).onSubtreeMutation(callback, timeout)
+- `$(...).onSubtreeMutation(callback, timeout)`
 
   Register a function that will be called whenever any of the elements
   in the jQuery object's matched set changes, or when any of those
@@ -91,12 +91,12 @@ interface.
         this.find(".ad").remove();
       });
 
-- $.onDocumentMutation(callback, timeout)
+- `$.onDocumentMutation(callback, timeout)`
 
   This is a static version of `onSubtreeMutation` that implicitly
   operates on the document's root element.
   
-- $(...).onAttrChange(callback, attr1, attr2, ...)
+- `$(...).onAttrChange(callback, attr1, attr2, ...)`
 
   Register a callback that will be called whenever any of the
   specified attributes changes on any of the jQuery object's matched
@@ -114,7 +114,7 @@ interface.
   once for each of them.  If the callback returns a truthy value for
   any attribute, the callback will be unregistered.
   
-- $(...).whenFound(selector, callback, timeout)
+- `$(...).whenFound(selector, callback, timeout)`
 
   Register a callback that will be called when the given jQuery
   selector identifies a nonempty collection of elements.
@@ -137,7 +137,7 @@ interface.
   Note that the entire document is searched with `selector`, not just
   elements under the matched set.
   
-- $.whenFound(selector, callback, timeout)
+- `$.whenFound(selector, callback, timeout)`
 
   This is a static version of `whenFound` that implicitly operates on
   the document's root element.
@@ -152,7 +152,7 @@ interface.
 These routines wrap the XPath interface provided by the browser's
 [document.evaluate](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate) function.
 
-- $(...).xpath(xpath, class1, class2, ...)
+- `$(...).xpath(xpath, class1, class2, ...)`
 
   This method is similar to jQuery's `find` instance method, but the
   selector is interpreted as XPath.  Each of the elements in the
@@ -176,7 +176,7 @@ These routines wrap the XPath interface provided by the browser's
   by whitespace.  For example, `jq.xpath(x, "foo bar")` is equivalent
   to `jq.xpath(x, "foo", "bar")`.
 
-- $.xpath(xpath, class1, class2, ...)
+- `$.xpath(xpath, class1, class2, ...)`
 
   This is a static version of `xpath` that uses the document's root
   element as the single XPath context node.
@@ -188,7 +188,7 @@ Example:
 
 ### Miscellaneous
 
-- $(...).computedStyle()
+- `$(...).computedStyle()`
 
   Returns an object that describes all style attributes of the first
   element in the jQuery object's matched set.  (If the jQuery object
@@ -202,7 +202,7 @@ Example:
   
       const bottom = $("body").computedStyle().marginBottom;
 
-- $.script(attrs)
+- `$.script(attrs)`
 
   Create a <script> element with the given attributes, if any.  If no
   "type" attribute is explicitly provided, the type "text/javascript"
@@ -213,7 +213,7 @@ Example:
       $.script().text("alert('Hello world!')").appendTo("head");
       $.script({ src: "localhost:8000/script.js"}).appendTo("head");
     
-- $.repeat(maxtimes, delay, callback)
+- `$.repeat(maxtimes, delay, callback)`
 
   Call the provided callback function up to maxtimes times, with delay
   microseconds between each call, until it returns a truthy value OR
@@ -225,15 +225,15 @@ Example:
   presence of elements dynamically added after page load, but the
   document mutation interface described above is better for this.
   
-- $(...).clickthis()
+- `$(...).clickthis()`
 
   Calls the native DOM click() method on each element in the jQuery
   object's matched set.
 
-- remove_it(arg)
+- `remove_it(arg)`
 
   Calls the remove method of arg with no arguments and returns
   nothing.
   
   This is a global function that is a convenient callback for
-  whenFound, above.
+  `whenFound`, above.
