@@ -18,9 +18,11 @@
 // along with conkeror-jquery.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-register_site_variables("jquery", function (buffer) {
-    return { $: $$(buffer) };
-});
+try {
+    register_site_variables("jquery", function (buffer) {
+        return { $: $$(buffer) };
+    });
+} catch (e) { }
 
 //  At some point, creating script elements via $("<script/>") stopped
 //  working; script elements created via assignment to innerHTML are
