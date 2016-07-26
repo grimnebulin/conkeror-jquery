@@ -58,7 +58,7 @@ $$.static.script = function (attrs) {
 $$.static.repeat = function (maxtimes, delay, callback) {
     function test(x) {
         return x && !(
-            typeof(x) == "object" && "length" in x && x.length === 0
+            typeof(x) === "object" && "length" in x && x.length === 0
         );
     }
     let count = 0;
