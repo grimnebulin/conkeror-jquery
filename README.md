@@ -204,9 +204,9 @@ Example:
 
 - `$.script(attrs)`
 
-  Create a <script> element with the given attributes, if any.  If no
-  "type" attribute is explicitly provided, the type "text/javascript"
-  is used.
+  Create a &lt;script&gt; element with the given attributes, if any.
+  If no "type" attribute is explicitly provided, the type
+  "text/javascript" is used.
   
   Example:
   
