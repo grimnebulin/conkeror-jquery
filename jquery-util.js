@@ -321,9 +321,7 @@ function xpathParseClasses(classes) {
 $$.fn.xpath = function (/* xpath, class, ... */) {
     const xpath = formatXpath(arguments);
     return this.map(function () {
-        return [
-            node for (node in evalXpath(this.ownerDocument, this, xpath))
-        ];
+        return Array.from(evalXpath(this.ownerDocument, this, xpath));
     });
 };
 
@@ -331,13 +329,15 @@ $$.fn.xpath = function (/* xpath, class, ... */) {
 //  the document's root <html> element as the context node.
 
 $$.static.xpath = function (/* xpath, class, ... */) {
-    return this([
-        node for (node in evalXpath(
-            this.document,
-            this.document.documentElement,
-            formatXpath(arguments)
-        ))
-    ]);
+    return this(
+        Array.from(
+            evalXpath(
+                this.document,
+                this.document.documentElement,
+                formatXpath(arguments)
+            )
+        )
+    );
 };
 
 
