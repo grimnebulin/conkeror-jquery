@@ -146,11 +146,11 @@ $$.fn.onSubtreeMutation = function (callback, timeout) {
 //  watched.  The callback is passed the name of the attribute that
 //  changed as its first and only parameter.
 
-$$.fn.onAttrChange = function (callback /* , attr, ... */) {
+$$.fn.onAttrChange = function (callback, ...attrs) {
     const config = { attributes: true };
 
-    if (arguments.length >= 2)
-        config.attributeFilter = Array.prototype.slice.call(arguments, 1);
+    if (attrs.length > 0)
+        config.attributeFilter = attrs;
 
     return this.onMutation(
         function (singleton, records) {
@@ -260,10 +260,10 @@ function evalXpath(document, context, xpath) {
 //  An exception is raised if the number of supplied classes does not
 //  match the number of embedded "%s" sequences.
 
-function formatXpath(args) {
-    const classes = xpathParseClasses(Array.slice(args, 1));
+function formatXpath(rawXpath, rawClasses) {
+    const classes = xpathParseClasses(rawClasses);
 
-    const xpath = args[0].replace(/%([%s])/g, function (_, c) {
+    const xpath = rawXpath.replace(/%([%s])/g, function (_, c) {
         if (c == "%")
             return c;
         if (classes.length == 0)
@@ -318,8 +318,8 @@ function xpathParseClasses(classes) {
 //  jQuery object in turn as the context node, then collects all of
 //  the found nodes together into a new jQuery object.
 
-$$.fn.xpath = function (/* xpath, class, ... */) {
-    const xpath = formatXpath(arguments);
+$$.fn.xpath = function (rawXpath, ...classes) {
+    const xpath = formatXpath(rawXpath, classes);
     return this.map(function () {
         return Array.from(evalXpath(this.ownerDocument, this, xpath));
     });
@@ -328,13 +328,13 @@ $$.fn.xpath = function (/* xpath, class, ... */) {
 //  A static version of the xpath method that searches for nodes using
 //  the document's root <html> element as the context node.
 
-$$.static.xpath = function (/* xpath, class, ... */) {
+$$.static.xpath = function (xpath, ...classes) {
     return this(
         Array.from(
             evalXpath(
                 this.document,
                 this.document.documentElement,
-                formatXpath(arguments)
+                formatXpath(xpath, classes)
             )
         )
     );
