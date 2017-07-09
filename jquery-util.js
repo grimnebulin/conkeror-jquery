@@ -1,6 +1,6 @@
 "use strict";
 
-// Copyright 2016 Sean McAfee
+// Copyright 2017 Sean McAfee
 
 // This file is part of conkeror-jquery.
 
@@ -214,29 +214,6 @@ function remove_it(arg) {
 //  XPath interface.
 //
 
-//  Because XPath does not have a convenient way to test for the
-//  inclusion of specific names in a whitespace-delimited list of them
-//  (such as HTML elements' "class" attributes), this interface offers
-//  such a convenience.  Both the static and nonstatic versions of the
-//  xpath() method (see below) accept an XPath expression that may
-//  contain both "%%" and "%s" formatting sequences, followed by a
-//  list of strings containing whitespace-delimited names, to a number
-//  which should equal the number of "%s" sequences.  The "%s"
-//  sequences will be replaced with boolean XPath expressions which
-//  evaluate to true if a "class" child attribute node of the current
-//  node at the point where the sequence is expanded contains the next
-//  name, in order.
-//
-//  Example:
-//
-//  $.xpath("//div[%s]//table[%s and %s]", "foo", "bar", "baz")
-//  searches for table descendents with the classes "bar" and "baz" of
-//  any div elements with class "foo".  This can be equivalently
-//  represented as $.xpath("//div[%s]//table[%s and %s]", "foo bar baz").
-//
-//  "%" characters in the XPath expression which are not followed by
-//  another "%" character or an "s" character need not be escaped.
-
 //  Helper function; generator for the nodes found by document.evaluate().
 
 function evalXpath(document, context, xpath) {
@@ -244,39 +221,6 @@ function evalXpath(document, context, xpath) {
     let node;
     while ((node = result.iterateNext()) !== null)
         yield node;
-}
-
-//  This function formats an XPath expression from the arguments
-//  object ARGS which was passed to either of the jQuery xpath()
-//  methods defined below.  The second and succeeding items in ARGS,
-//  if any, are interpreted as strings containing whitespace-delimited
-//  class names.  The first item in ARGS is interpreted as an XPath
-//  expression with possible embedded formatting sequences "%%" and
-//  "%s".  "%%" sequences are collapsed into a single "%" character;
-//  "%s" sequences are replaced by boolean XPath expressions that
-//  return true if the local "class" attribute contains the class
-//  named by the next class from ARGS, in order.
-//
-//  An exception is raised if the number of supplied classes does not
-//  match the number of embedded "%s" sequences.
-
-function formatXpath(rawXpath, rawClasses) {
-    const classes = xpathParseClasses(rawClasses);
-
-    const xpath = rawXpath.replace(/%([%s])/g, function (_, c) {
-        if (c == "%")
-            return c;
-        if (classes.length == 0)
-            throw "Too few classes supplied to XPath expression";
-        return 'contains(concat(" ",normalize-space(@class)," "),' +
-            xpathString(" " + classes.shift() + " ") + ')';
-    });
-
-    if (classes.length > 0)
-        throw "Too many classes supplied to XPath expression";
-
-    return xpath;
-
 }
 
 //  This function returns a string containing an XPath expression
@@ -302,24 +246,11 @@ function xpathString(str) {
             + ")";
 }
 
-//  This function returns an array of all consecutive sequences of
-//  non-whitespace characters in all of the strings in the input array
-//  CLASSES.  "Whitespace" here is meant in the XML sense of the
-//  characters with ordinal values 0x20, 0x09, 0x0d, and 0x0a.
-
-function xpathParseClasses(classes) {
-    return Array.prototype.concat.apply(
-        [ ], classes.map   (c => c.match(/[^\x20\x09\x0d\x0a]+/g))
-                    .filter(x => x !== null)
-    );
-}
-
 //  This method searches for nodes using each of the nodes in this
 //  jQuery object in turn as the context node, then collects all of
 //  the found nodes together into a new jQuery object.
 
-$$.fn.xpath = function (rawXpath, ...classes) {
-    const xpath = formatXpath(rawXpath, classes);
+$$.fn.xpath = function (xpath) {
     return this.map(function () {
         return Array.from(evalXpath(this.ownerDocument, this, xpath));
     });
@@ -328,18 +259,45 @@ $$.fn.xpath = function (rawXpath, ...classes) {
 //  A static version of the xpath method that searches for nodes using
 //  the document's root <html> element as the context node.
 
-$$.static.xpath = function (xpath, ...classes) {
+$$.static.xpath = function (xpath) {
     return this(
         Array.from(
-            evalXpath(
-                this.document,
-                this.document.documentElement,
-                formatXpath(xpath, classes)
-            )
+            evalXpath(this.document, this.document.documentElement, xpath)
         )
     );
 };
 
+// xpath is a function which can be used as a template literal tag function.
+//
+// Each embedded expression is expanded into an XPath expression which
+// is true if the "class" attribute of the current context node
+// contains the content of the expression as a class.
+//
+// Example:
+//
+//   xpath`//div[${'article'}]`
+//
+// ...expands into:
+//
+//   //div[contains(concat(" ",normalize-space(@class)," ")," article ")]
+//
+// If the embedded expression is an array, then the expanded
+// expression is true if all of the elements of the array are classes
+// of the context node, eg:
+//
+//   xpath`//div[${['article', 'body']}]
+
+function xpath(strings, ...classes) {
+    let result = strings[0];
+    classes.forEach(function (klass, i) {
+        result +=
+            (Array.isArray(klass) ? klass : [ klass ]).map(function (c) {
+                return 'contains(concat(" ",normalize-space(@class)," "),'
+                    + xpathString(" " + c + " ") + ')';
+            }).join(" and ");
+    });
+    return result;
+}
 
 //  This method returns an object describing the computed style of the
 //  first element in this jQuery object.

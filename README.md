@@ -152,7 +152,7 @@ interface.
 These routines wrap the XPath interface provided by the browser's
 [document.evaluate](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate) function.
 
-- `$(...).xpath(xpath, class1, class2, ...)`
+- `$(...).xpath(xpath)`
 
   This method is similar to jQuery's `find` instance method, but the
   selector is interpreted as XPath.  Each of the elements in the
@@ -161,30 +161,26 @@ These routines wrap the XPath interface provided by the browser's
   matched elements are accumulated into a single jQuery object, which
   is returned.
   
-  Writing XPath expressions that correspond to jQuery class selectors
-  can be irksome, so class names can be provided as additional
-  arguments.  `"%s"` substrings of the `xpath` parameter will be
-  replaced, in order, with XPath boolean expressions that evaluates to
-  true if the context element at that point has a `class` attribute
-  that contains that class.  Literal `"%"` characters must be doubled
-  to be interpreted literally.
-  
-  If there is a mismatch between the number of `%s`es and classes, an
-  exception is thrown.
-  
-  Each `class` argument may itself contain multiple classes, separated
-  by whitespace.  For example, `jq.xpath(x, "foo bar")` is equivalent
-  to `jq.xpath(x, "foo", "bar")`.
-
-- `$.xpath(xpath, class1, class2, ...)`
+- `$.xpath(xpath)`
 
   This is a static version of `xpath` that uses the document's root
   element as the single XPath context node.
   
+- `` xpath`...XPath expression...` ``
+
+  This is a template tag literal function that makes it easy to write
+  XPath expressions that involve testing whether an element's `class`
+  attribute contains a given class.  Each interpolated expression is
+  expanded into a boolean XPath expression that evaluates to `true` if
+  the `class` attribute of the current context node contains that
+  expression as a class.  Alternately, the interpolated expression may
+  be an array, in which case it is expanded into a list of boolean
+  XPath expressions joined with the "and" operator.
+  
 Example:
 
-    // Remove every div whose parent is a div with the class "foo":
-    $.xpath("//div[parent::div[%s]]", "foo").remove();
+    // Remove every div whose parent is a div with the classes "foo" and "bar":
+    $.xpath(xpath`//div[parent::div[${['foo','bar']}]]`).remove();
 
 ### Miscellaneous
 
