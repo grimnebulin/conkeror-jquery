@@ -17,7 +17,7 @@
  	navigator = window.navigator,
 -	location = window.location;
 +	location = window.location,
-+        setTimeout = window.setTimeout;
++        setTimeout = window.setTimeout.bind(window);
  var jQuery = (function() {
  
  // Define a local copy of jQuery
