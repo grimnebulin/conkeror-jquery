@@ -294,7 +294,7 @@ function xpath(strings, ...classes) {
             (Array.isArray(klass) ? klass : [ klass ]).map(function (c) {
                 return 'contains(concat(" ",normalize-space(@class)," "),'
                     + xpathString(" " + c + " ") + ')';
-            }).join(" and ");
+            }).join(" and ") + strings[i + 1];
     });
     return result;
 }
